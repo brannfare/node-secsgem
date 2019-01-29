@@ -1,5 +1,22 @@
 class Message {
+<<<<<<< HEAD
+  constructor (s, f, name = null, item = null, replyExpected = true) {
+    if(this.S > 127) {
+      throw new TypeError("Stream number can not exceed 127")
+    }
+
+    this.S = s
+    this.F = f
+    this.Name = name
+    this.ReplyExpected = replyExpected
+    this.Item = item
+  }
+}
+
+new Message
+=======
   constructor () {
 
   }
 }
+>>>>>>> 8e9a7d209ac05abc4825df23c66feaa4654c5241
