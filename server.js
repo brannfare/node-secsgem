@@ -1,6 +1,8 @@
 const net = require('net')
+const MessageHeader = require('./MessageHeader')
 const MessageType = require('./MessageType')
 const State = require('./ConnectionState')
+const StreamDecoder = require('./StreamDecoder')
 
 const defaultAddress = '127.0.01'
 const defaultPort = 2000
@@ -9,6 +11,7 @@ class Server {
   constructor (port, address) {
     this.port = port || defaultPort
     this.address = address || defaultAddress
+    this.Systembyte = this.testSystemByte()
     this.boot()
   }
   boot () {
@@ -20,19 +23,18 @@ class Server {
 
       socket.on('data', (chunk) => {
 
-        if (server.isBufferEqual(chunk, new Buffer(MessageType.SelectRequest.toString(), "binary"))) {
-          socket.write(new Buffer(MessageType.SelectResponse.toString(), "binary"))
-          this.state = State.Selected
-          return
-        }
+        const decoder = new StreamDecoder(chunk, (header) => {
+          switch(header.MessageType) {
+            case MessageType.SelectRequest:
+              server.SendControlMessage(MessageType.SelectResponse, this.Systembyte, (msg) => {
+                socket.write(msg)
+              })
+            break;
+          }
+        })
+        decoder.Decode(chunk.length)
 
-        if (chunk.toString() === 'status') {
-          console.log(server.getConnectionState(this.state))
-
-          return
-        }
-
-        console.log("Recv: ", chunk)
+        // console.log("Recv: ", chunk)
       })
 
       socket.on('close', () => {
@@ -49,6 +51,13 @@ class Server {
 
     server.connection.listen(server.port, server.address)
 
+  }
+  SendControlMessage (msgType, sysbyte, cb) {
+    const controlMessagelengthBytes = new Buffer([0, 0, 0, 10])
+    const msg = new MessageHeader(0xFFFF, false, 0, 0, msgType, sysbyte)
+    const joined = Buffer.concat([controlMessagelengthBytes, msg.encode()])
+
+    return cb(joined)
   }
   testSystemByte () {
     return 1233687660

@@ -9,7 +9,13 @@ class Message {
     this.Name = name
     this.ReplyExpected = replyExpected
     this.Item = item
+    this.RawData = this.Data()
+  }
+  Data () {
+    return {
+
+    }
   }
 }
 
-new Message
+module.exports = Message

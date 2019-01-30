@@ -28,8 +28,16 @@ class MessageHeader {
     return this.buffer
   }
 
-  decode () {
+  static decode (buf) {
     // Decode from buffer
+    return new MessageHeader(
+      buf.readUInt16BE(0), // DeviceId
+      Boolean((buf.readUInt8(2) & 128)), // ReplyExpected
+      (buf.readUInt8(2) & 63),  // S
+      buf.readUInt8(3), // F
+      buf.readUInt8(5), // MessageType
+      buf.readInt32BE(6) // SystemBytes
+    )
   }
 
 }
