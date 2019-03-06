@@ -1,3 +1,5 @@
+const Item = require('./Item')
+
 class Message {
   constructor (s, f, name = null, item = null, replyExpected = true) {
     if(this.S > 127) {
