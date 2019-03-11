@@ -5,7 +5,7 @@ const rl = readline.createInterface({
  output: process.stdout
 });
 
-const client = new Client()
+const client = new Client(2000, '0.0.0.0')
 
 rl.on('line', (cmd) => {
   client.send(cmd)

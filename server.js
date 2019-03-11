@@ -4,7 +4,7 @@ const MessageType = require('./MessageType')
 const State = require('./ConnectionState')
 const StreamDecoder = require('./StreamDecoder')
 
-const defaultAddress = '127.0.01'
+const defaultAddress = '127.0.0.1'
 const defaultPort = 2000
 
 class Server {
