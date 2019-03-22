@@ -31,7 +31,11 @@ class Server {
               })
             break;
           }
-        })
+        },
+        (header, msg) => {
+          console.log(header, msg)
+        }
+        )
         decoder.Decode(chunk.length)
 
         // console.log("Recv: ", chunk)

@@ -15,7 +15,7 @@ class Message {
   }
   Data () {
     return {
-
+      itemData: this.Item.data
     }
   }
 }

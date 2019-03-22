@@ -3,8 +3,11 @@ const State = require('./ConnectionState')
 const MessageType = require('./MessageType')
 const MessageHeader = require('./MessageHeader')
 const StreamDecoder = require('./StreamDecoder')
+const Item = require('./Item')
+const Format = require('./Format')
+const Message = require('./Message')
 
-const defaultAddress = '127.0.01'
+const defaultAddress = '127.0.0.1'
 const defaultPort = 2000
 
 class Client {
@@ -19,7 +22,7 @@ class Client {
   boot () {
     let client = this
 
-    client.socket.connect(2000, '127.0.0.1', () => {
+    client.socket.connect(2000, this.address, () => {
       client.state = State.Connected
 
       client.SendControlMessage(MessageType.SelectRequest, this.SystemByte, (msg) => {
@@ -35,8 +38,19 @@ class Client {
           case MessageType.SelectResponse:
             switch(header.F) {
               case 0:
-                console.log("Select Transaction complete!")
+                console.log("✅   Select Transaction complete!")
                 client.state = State.Selected
+
+                let buf = new Buffer(4)
+                buf.writeInt32BE(1337)
+                let item = new Item(Format.I4, buf)
+
+                let message = new Message(1, 1, 'potato', item, false)
+
+                client.SendDataMessage(message, this.SystemByte, (datamsg) => {
+                  // client.send(datamsg)
+                })
+
               break
               case 1:
                 console.log("Communication already Active")
@@ -53,12 +67,14 @@ class Client {
             }
           break;
         }
+      }, (header, msg) => {
+        // console.log(header, msg)
       })
       decoder.Decode(chunk.length)
     })
 
     client.socket.on('close', () => {
-      console.log("☠️  Server closed the connection")
+      console.log("☠️   Server closed the connection")
       client.state = State.Connecting
     })
 
@@ -73,16 +89,20 @@ class Client {
       throw new Error("[!] Communication state is not Selected")
     }
 
-    let msgHeader = new MessageHeader(
+    let header = new MessageHeader(
       0, // DeviceId
       msg.ReplyExpected, // ReplyExpected
       msg.S,// S
       msg.F,// F
-      undefined, // MessageType
-      systembyte // System byte
+      MessageType.DataMessage, // MessageType
+      sysbyte // System byte
     )
 
-    cb(msg.encode())
+    let totalLength = Buffer.from([0, 0, 0, msg.RawData.itemData.length + header.encode().length])
+
+    let joined = Buffer.concat([totalLength, header.encode()])
+
+    cb(joined)
   }
   SendControlMessage (msgType, sysbyte, cb) {
     const controlMessagelengthBytes = new Buffer([0, 0, 0, 10])

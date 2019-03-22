@@ -21,8 +21,8 @@ class Item {
       result[0] = (this.Format | 1)
       result[1] = valueCount
 
-      console.log("res[0]", result[0])
-      console.log("res[1]", result[1])
+      // console.log("res[0]", result[0])
+      // console.log("res[1]", result[1])
 
       return { result: result, initialBytes: 2 }
     }
